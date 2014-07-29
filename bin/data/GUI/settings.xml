@@ -1,0 +1,30 @@
+<Widget>
+    <Kind>17</Kind>
+    <Name>Show CV</Name>
+    <Value>1</Value>
+</Widget>
+<Widget>
+    <Kind>17</Kind>
+    <Name>Show Abstracted Video</Name>
+    <Value>1</Value>
+</Widget>
+<Widget>
+    <Kind>17</Kind>
+    <Name>Show System Messages</Name>
+    <Value>1</Value>
+</Widget>
+<Widget>
+    <Kind>17</Kind>
+    <Name>Invert Record Colors</Name>
+    <Value>0</Value>
+</Widget>
+<Widget>
+    <Kind>28</Kind>
+    <Name>Background_Color</Name>
+    <XValue>0.000000000</XValue>
+    <YValue>0.055118110</YValue>
+    <RColor>255</RColor>
+    <GColor>255</GColor>
+    <BColor>255</BColor>
+    <AColor>255</AColor>
+</Widget>

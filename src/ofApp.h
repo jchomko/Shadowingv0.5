@@ -1,6 +1,15 @@
 #pragma once
 
 #include "ofMain.h"
+#include "OCV.h"
+#include "ofxOpenCV.h"
+#include "ofxSimpleTimer.h"
+#include "ofxUI.h"
+#include "VideoBufferStorage.h"
+
+#define CAM_WIDTH 320
+#define CAM_HEIGHT 240
+#define FRAMERATE 30
 
 class ofApp : public ofBaseApp{
 
@@ -18,5 +27,39 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-		
+    
+        void setupGUI();
+        void guiEvent(ofxUIEventArgs &e);
+        void exit();
+    
+        CV openCV;
+        std::deque<videoBuffer> buffers;
+        vector<ofImage> videoImage;
+    
+        vector<ofVec2f> blobPath;
+        
+        ofxUICanvas *guiCV;
+        ofImage *colorSampler;
+        
+        bool startRecording;
+        bool learnBackground;
+        bool bProgressiveLearning;
+        int  threshold;
+        float fProgressiveRate;
+        bool bUseApprox;
+        bool bFillHoles;
+        int iMinBlobSize;
+        int iMaxBlobSize;
+        int iMaxBlobNum;
+        bool bMirrorH;
+        bool bMirrorV;
+        float fBlur;
+        bool drawCV;
+        bool drawLiveImage;
+        int progress;
+        bool hasBeenPushedFlag;
+        bool showPreviousBuffers;
+    
+        ofColor backColor, shadowColor;
+    
 };
