@@ -1,12 +1,27 @@
 <Widget>
     <Kind>17</Kind>
+    <Name>Fullscreen</Name>
+    <Value>1</Value>
+</Widget>
+<Widget>
+    <Kind>17</Kind>
     <Name>Draw CV</Name>
-    <Value>0</Value>
+    <Value>1</Value>
+</Widget>
+<Widget>
+    <Kind>17</Kind>
+    <Name>Show Buffers</Name>
+    <Value>1</Value>
 </Widget>
 <Widget>
     <Kind>17</Kind>
     <Name>Draw Live</Name>
-    <Value>1</Value>
+    <Value>0</Value>
+</Widget>
+<Widget>
+    <Kind>17</Kind>
+    <Name>Show Data</Name>
+    <Value>0</Value>
 </Widget>
 <Widget>
     <Kind>17</Kind>
@@ -21,36 +36,46 @@
 <Widget>
     <Kind>8</Kind>
     <Name>THRESHOLD</Name>
-    <Value>58.000000000</Value>
+    <Value>60.000000000</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
     <Name>MIN_BLOB_SIZE</Name>
-    <Value>115.000000000</Value>
+    <Value>120.000000000</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
     <Name>MAX_BLOB_SIZE</Name>
-    <Value>25590.000000000</Value>
+    <Value>25610.000000000</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
     <Name>MAX_BLOB_NUM</Name>
-    <Value>7.000000000</Value>
+    <Value>5.000000000</Value>
 </Widget>
 <Widget>
     <Kind>17</Kind>
     <Name>Fill Holes</Name>
-    <Value>1</Value>
+    <Value>0</Value>
 </Widget>
 <Widget>
     <Kind>17</Kind>
     <Name>Use Approximation</Name>
-    <Value>1</Value>
+    <Value>0</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
     <Name>BLUR</Name>
+    <Value>1.000000000</Value>
+</Widget>
+<Widget>
+    <Kind>8</Kind>
+    <Name>BrightnessV</Name>
+    <Value>1.000000000</Value>
+</Widget>
+<Widget>
+    <Kind>8</Kind>
+    <Name>ContrastV</Name>
     <Value>1.000000000</Value>
 </Widget>
 <Widget>
@@ -66,20 +91,30 @@
 <Widget>
     <Kind>28</Kind>
     <Name>Background_Color</Name>
-    <XValue>0.566929162</XValue>
-    <YValue>0.543307066</YValue>
-    <RColor>75</RColor>
-    <GColor>33</GColor>
-    <BColor>0</BColor>
+    <XValue>0.779527545</XValue>
+    <YValue>0.842519701</YValue>
+    <RColor>255</RColor>
+    <GColor>255</GColor>
+    <BColor>188</BColor>
     <AColor>255</AColor>
 </Widget>
 <Widget>
     <Kind>28</Kind>
     <Name>Shadow_Color</Name>
-    <XValue>0.511811018</XValue>
+    <XValue>0.535433054</XValue>
     <YValue>0.519685030</YValue>
-    <RColor>15</RColor>
-    <GColor>16</GColor>
+    <RColor>35</RColor>
+    <GColor>12</GColor>
     <BColor>0</BColor>
     <AColor>255</AColor>
+</Widget>
+<Widget>
+    <Kind>17</Kind>
+    <Name>Use Mask</Name>
+    <Value>1</Value>
+</Widget>
+<Widget>
+    <Kind>8</Kind>
+    <Name>Mask_No</Name>
+    <Value>1.000000000</Value>
 </Widget>

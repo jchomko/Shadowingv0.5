@@ -3,22 +3,40 @@
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-    openCV.setup(CAM_WIDTH,CAM_HEIGHT,FRAMERATE);
-    setupGUI();
     ofSetFrameRate(FRAMERATE);
+    
+    ofDirectory maskDirectory;
+    
+    int nFiles = maskDirectory.listDir("Masks");
+    maskDirectory.sort();
+    if(nFiles)
+    {
+        ofLog(OF_LOG_ERROR, "Found Mask Folder");
+        for(int i=0; i< maskDirectory.numFiles(); i++)
+        {
+            string filePath = maskDirectory.getPath(i);
+            masks[i].loadImage(filePath);
+            maskString.push_back(filePath);
+        }
+    }
+    else
+    {
+        ofLog(OF_LOG_ERROR, "Can't Find Mask Folder");
+    }
+    
+    setupGUI();
+    openCV.setup(CAM_WIDTH,CAM_HEIGHT,FRAMERATE);
     drawLiveImage = false;
     drawCV = true;
     progress = 0;
+    whichMask = 1;
     hasBeenPushedFlag = true;
     learnBackground = true;
-    learnBackground = false;
     showPreviousBuffers = false;
 }
-
 //--------------------------------------------------------------
 void ofApp::update()
 {
-    
     // Set Title
     string title = "Shadowing Stage 0.5: " + ofToString(ofGetTimestampString("%H:%M:%S  %d/%m/%Y"));
     ofSetWindowTitle(title);
@@ -33,11 +51,10 @@ void ofApp::update()
     }
     
     // If we have 10 buffers in the memory then release one
-    if (buffers.size() >= 10)
+    if (buffers.size() >= 5)
     {
         buffers.pop_back();
     }
-    
     
     // Custom CV mechanism
     openCV.subtractionLoop(learnBackground, bProgressiveLearning,fProgressiveRate,bMirrorH,bMirrorV,threshold,iMinBlobSize, iMaxBlobSize,iMaxBlobNum,bFillHoles,bUseApprox);
@@ -56,7 +73,7 @@ void ofApp::update()
         startRecording = false;
         if (hasBeenPushedFlag == false)
         {
-            if (videoImage.size() >= 30 && blobPath.size() >= 30)
+            if (videoImage.size() >= 30 && !blobPath.empty())
             {
                 ofLog(OF_LOG_NOTICE, "Buffers Ok");
                 videoBuffer b;
@@ -74,7 +91,6 @@ void ofApp::update()
                 blobPath.clear();
                 hasBeenPushedFlag = true;
             }
-            
         }
         else
         {
@@ -87,7 +103,7 @@ void ofApp::update()
         // If new frame
         if (openCV.newFrame())
         {
-            // Every other frame
+            // Capture Data according to % number
             if (ofGetFrameNum() % 1 == 0)
             {
                 // Capture the CV image
@@ -100,20 +116,42 @@ void ofApp::update()
     {
         
     }
-    
 }
 //--------------------------------------------------------------
 void ofApp::draw()
 {
     ofBackground(0, 0, 0);
-
+    
+    
     ofPushStyle();
+    
     // Draw the first buffer in the Vector
     if (!buffers.empty())
     {
         buffers[0].draw();
+        //buffers[0].drawBlobPath();
     }
     ofPopStyle();
+
+    if (drawMask)
+    {
+        ofEnableAlphaBlending();
+        ofSetColor(255, 255);
+        masks[whichMask].draw(0,0,ofGetWidth(),ofGetHeight());
+        ofDisableAlphaBlending();
+    }
+    
+    // Draw all the CV Stuff
+    if(drawCV == true)
+    {
+        openCV.draw();
+        //openCV.drawAllPaths();
+    }
+    // Draw only the Live input in Grayscale
+    if(drawLiveImage == true)
+    {
+        openCV.drawLive();
+    }
     ofPushStyle();
     // Show the previous Buffers
     if (showPreviousBuffers)
@@ -126,18 +164,8 @@ void ofApp::draw()
                 buffers[i].drawMini(0, 0+(i*240/4));
             }
         }
-        ofPopStyle();
     }
-    // Draw all the CV Stuff
-    if(drawCV == true)
-    {
-        openCV.draw();
-    }
-    // Draw only the Live input in Grayscale
-    if(drawLiveImage == true)
-    {
-        openCV.drawLive();
-    }
+    ofPopStyle();
 }
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key)
@@ -193,19 +221,17 @@ void ofApp::exit()
     guiCV->saveSettings("GUI/CV.xml");
     delete guiCV;
     //recorder.stopThread();
-    
-    
 }
 //--------------------------------------------------------------
 void ofApp::setupGUI()
 {
-    
     colorSampler = new ofImage();
     colorSampler->loadImage("GUI/colorSamplerImage.png");
     
     guiCV = new ofxUICanvas(0,0,500,600);
-    guiCV->setTheme(OFX_UI_THEME_HAYLOCK_BLACK);
+    guiCV->setTheme(OFX_UI_THEME_HACKER);
     guiCV->addWidgetDown(new ofxUILabel("Shadowing Stage 0.5", OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetDown(new ofxUILabelToggle("Fullscreen",true,255/2,30,OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabelToggle("Draw CV",true,255/2,30,OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetRight(new ofxUILabelToggle("Show Buffers",true,255/2,30,OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabelToggle("Draw Live",false,255/2,30,OFX_UI_FONT_MEDIUM));
@@ -225,6 +251,10 @@ void ofApp::setupGUI()
     guiCV->addWidgetRight(new ofxUILabelToggle("Use Approximation",false,255/2,30,OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabel("Blur", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 1, "BLUR", OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetDown(new ofxUILabel("Brighness", OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 1, "BrightnessV", OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetDown(new ofxUILabel("Contrast", OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 1, "ContrastV", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabelToggle("Progressive Background",false,255,30,OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabel("Progression Rate", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetRight(new ofxUINumberDialer(0.00f, 1.00f, 0.01f, 4, "PROGRESSIVE_RATE", OFX_UI_FONT_MEDIUM));
@@ -232,7 +262,10 @@ void ofApp::setupGUI()
     guiCV->addWidgetDown(new ofxUIImageSampler(255/2, 255/2, colorSampler, "Background_Color"));
     guiCV->addWidgetEastOf(new ofxUILabel("Shadow Color", OFX_UI_FONT_MEDIUM),"BGL");
     guiCV->addWidgetEastOf(new ofxUIImageSampler(255/2, 255/2, colorSampler, "Shadow_Color"),"Background_Color");
-    
+    guiCV->addWidgetDown(new ofxUILabelToggle("Use Mask",true,255/2,30,OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetDown(new ofxUILabel("Mask Number", OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetRight(new ofxUINumberDialer(0, 5, 1, 0, "Mask_No", OFX_UI_FONT_MEDIUM));
+    guiCV->autoSizeToFitWidgets();
     ofAddListener(guiCV->newGUIEvent,this, &ofApp::guiEvent);
     guiCV->loadSettings("GUI/CV.xml");
 }
@@ -244,6 +277,16 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
         ofxUILabelToggle * toggle = (ofxUILabelToggle *) e.widget;
         bProgressiveLearning = toggle->getValue();
     }
+    else if(e.getName() == "Use Mask")
+    {
+        ofxUILabelToggle * toggle = (ofxUILabelToggle *) e.widget;
+        drawMask = toggle->getValue();
+    }
+    else if(e.getName() == "Mask_No")
+    {
+        ofxUINumberDialer * dial = (ofxUINumberDialer *) e.widget;
+        whichMask = dial->getValue();
+    }
     else if(e.getName() == "Learn Background")
     {
         ofxUILabelButton * button = (ofxUILabelButton *) e.widget;
@@ -253,6 +296,21 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
     {
         ofxUINumberDialer * dial = (ofxUINumberDialer *) e.widget;
         fProgressiveRate = dial->getValue();
+    }
+    else if(e.getName() == "BrightnessV")
+    {
+        ofxUINumberDialer * dial = (ofxUINumberDialer *) e.widget;
+        brightness = dial->getValue();
+    }
+    else if(e.getName() == "ContrastV")
+    {
+        ofxUINumberDialer * dial = (ofxUINumberDialer *) e.widget;
+        contrast = dial->getValue();
+    }
+    else if(e.getName() == "Fullscreen")
+    {
+        ofxUILabelToggle * toggle = (ofxUILabelToggle *) e.widget;
+        ofSetFullscreen(toggle->getValue());
     }
     else if(e.getName() == "Show Buffers")
     {

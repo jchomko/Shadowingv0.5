@@ -11,6 +11,8 @@
 #define CAM_HEIGHT 240
 #define FRAMERATE 30
 
+
+
 class ofApp : public ofBaseApp{
 
 	public:
@@ -33,11 +35,14 @@ class ofApp : public ofBaseApp{
         void exit();
     
         CV openCV;
-        std::deque<videoBuffer> buffers;
-        vector<ofImage> videoImage;
     
+        std::deque<videoBuffer> buffers;
+
+        vector<ofImage> videoImage;
         vector<ofVec2f> blobPath;
-        
+        ofImage masks[6];
+        vector <string> maskString;
+    
         ofxUICanvas *guiCV;
         ofImage *colorSampler;
         
@@ -51,6 +56,7 @@ class ofApp : public ofBaseApp{
         int iMinBlobSize;
         int iMaxBlobSize;
         int iMaxBlobNum;
+        float brightness,contrast;
         bool bMirrorH;
         bool bMirrorV;
         float fBlur;
@@ -59,6 +65,8 @@ class ofApp : public ofBaseApp{
         int progress;
         bool hasBeenPushedFlag;
         bool showPreviousBuffers;
+        bool drawMask;
+        int whichMask;
     
         ofColor backColor, shadowColor;
     
