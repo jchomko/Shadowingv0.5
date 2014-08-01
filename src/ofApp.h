@@ -2,7 +2,7 @@
 
 #include "ofMain.h"
 #include "OCV.h"
-#include "ofxOpenCV.h"
+//#include "ofxOpenCV.h"
 #include "ofxSimpleTimer.h"
 #include "ofxUI.h"
 #include "VideoBufferStorage.h"
@@ -30,23 +30,12 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
     
-        void setupGUI();
-        void guiEvent(ofxUIEventArgs &e);
+    
         void exit();
+        void setupVariables();
     
+        // openCV
         CV openCV;
-    
-        std::deque<videoBuffer> buffers;
-
-        vector<ofImage> videoImage;
-        vector<ofVec2f> blobPath;
-        ofImage masks[6];
-        vector <string> maskString;
-    
-        ofxUICanvas *guiCV;
-        ofImage *colorSampler;
-        
-        bool startRecording;
         bool learnBackground;
         bool bProgressiveLearning;
         int  threshold;
@@ -60,14 +49,43 @@ class ofApp : public ofBaseApp{
         bool bMirrorH;
         bool bMirrorV;
         float fBlur;
-        bool drawCV;
-        bool drawLiveImage;
-        int progress;
-        bool hasBeenPushedFlag;
-        bool showPreviousBuffers;
+        vector<ofVec2f> blobPath;
+    
+        // GUI
+        void setupGUI();
+        void guiEvent(ofxUIEventArgs &e);
+        ofxUICanvas *guiCV;
+        ofImage *colorSampler;
+        
+        // Masks
+        void setupMasks();
         bool drawMask;
         int whichMask;
+        ofImage masks[6];
+        vector <string> maskString;
     
         ofColor backColor, shadowColor;
+    
+        // Misc
+        int progress;
+    
+        // Video Buffer Stuff
+        void playAllBuffersSequentially();
+        void playOneBufferTriggered();
+        void playLiveImageWithBufferTriggered();
+        void playAllBuffersLayered();
+        void playBuffersWithNoOneThere();
+    
+        std::deque<videoBuffer> buffers;
+        vector<ofImage> videoImage;
+    
+        int mode;
+        int howManyBuffersToStore;
+        bool showPreviousBuffers;
         int whichBufferAreWePlaying;
+        bool showMultipleBuffers;
+        bool startRecording;
+        bool drawCV;
+        bool drawLiveImage;
+        bool hasBeenPushedFlag;
 };

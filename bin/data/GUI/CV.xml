@@ -6,7 +6,7 @@
 <Widget>
     <Kind>17</Kind>
     <Name>Draw CV</Name>
-    <Value>0</Value>
+    <Value>1</Value>
 </Widget>
 <Widget>
     <Kind>17</Kind>
@@ -16,12 +16,17 @@
 <Widget>
     <Kind>17</Kind>
     <Name>Draw Live</Name>
-    <Value>1</Value>
+    <Value>0</Value>
 </Widget>
 <Widget>
     <Kind>17</Kind>
     <Name>Show Data</Name>
     <Value>0</Value>
+</Widget>
+<Widget>
+    <Kind>8</Kind>
+    <Name>BUFFER_NUMBER</Name>
+    <Value>7.000000000</Value>
 </Widget>
 <Widget>
     <Kind>17</Kind>
@@ -36,7 +41,7 @@
 <Widget>
     <Kind>8</Kind>
     <Name>THRESHOLD</Name>
-    <Value>20.000000000</Value>
+    <Value>40.000000000</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
@@ -46,7 +51,7 @@
 <Widget>
     <Kind>8</Kind>
     <Name>MAX_BLOB_SIZE</Name>
-    <Value>25610.000000000</Value>
+    <Value>25600.000000000</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
@@ -56,17 +61,17 @@
 <Widget>
     <Kind>17</Kind>
     <Name>Fill Holes</Name>
-    <Value>0</Value>
+    <Value>1</Value>
 </Widget>
 <Widget>
     <Kind>17</Kind>
     <Name>Use Approximation</Name>
-    <Value>0</Value>
+    <Value>1</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
     <Name>BLUR</Name>
-    <Value>1.600000024</Value>
+    <Value>4.999997139</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
@@ -91,30 +96,30 @@
 <Widget>
     <Kind>28</Kind>
     <Name>Background_Color</Name>
-    <XValue>0.905511796</XValue>
-    <YValue>0.976377964</YValue>
+    <XValue>0.503937006</XValue>
+    <YValue>0.496062994</YValue>
+    <RColor>4</RColor>
+    <GColor>0</GColor>
+    <BColor>7</BColor>
+    <AColor>255</AColor>
+</Widget>
+<Widget>
+    <Kind>28</Kind>
+    <Name>Shadow_Color</Name>
+    <XValue>0.921259820</XValue>
+    <YValue>0.952755928</YValue>
     <RColor>255</RColor>
     <GColor>255</GColor>
     <BColor>255</BColor>
     <AColor>255</AColor>
 </Widget>
 <Widget>
-    <Kind>28</Kind>
-    <Name>Shadow_Color</Name>
-    <XValue>0.503937006</XValue>
-    <YValue>0.472440958</YValue>
-    <RColor>16</RColor>
-    <GColor>0</GColor>
-    <BColor>30</BColor>
-    <AColor>255</AColor>
-</Widget>
-<Widget>
     <Kind>17</Kind>
     <Name>Use Mask</Name>
-    <Value>1</Value>
+    <Value>0</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
     <Name>Mask_No</Name>
-    <Value>2.000000000</Value>
+    <Value>1.000000000</Value>
 </Widget>
