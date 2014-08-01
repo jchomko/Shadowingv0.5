@@ -26,10 +26,15 @@ void ofApp::setup()
     
     setupGUI();
     openCV.setup(CAM_WIDTH,CAM_HEIGHT,FRAMERATE);
-    drawLiveImage = false;
-    drawCV = true;
+    //drawLiveImage = false;
+    //drawCV = true;
     progress = 0;
     whichMask = 1;
+    
+    whichBufferAreWePlaying = 0;
+    
+    ofClamp(whichBufferAreWePlaying, 0, 5);
+    
     hasBeenPushedFlag = true;
     learnBackground = true;
     showPreviousBuffers = false;
@@ -57,14 +62,37 @@ void ofApp::update()
     }
     
     // Custom CV mechanism
-    openCV.subtractionLoop(learnBackground, bProgressiveLearning,fProgressiveRate,bMirrorH,bMirrorV,threshold,iMinBlobSize, iMaxBlobSize,iMaxBlobNum,bFillHoles,bUseApprox);
+    int mode = 0;
+    if (mode == 0)
+    {
+        openCV.subtractionLoop(learnBackground, bProgressiveLearning,fProgressiveRate,bMirrorH,bMirrorV,threshold,fBlur,iMinBlobSize, iMaxBlobSize,iMaxBlobNum,bFillHoles,bUseApprox);
+        // Do Blob Assembly
+        openCV.readAndWriteBlobData(backColor,shadowColor);
+    }
+    else if(mode == 1)
+    {
+        openCV.subtractionLoop(learnBackground, bProgressiveLearning,fProgressiveRate,bMirrorH,bMirrorV,threshold,fBlur,iMinBlobSize, iMaxBlobSize,iMaxBlobNum,bFillHoles,bUseApprox,brightness,contrast);
+        // Do Blob Assembly
+        openCV.readAndWriteBlobData(backColor,shadowColor);
+    }
+    else if(mode == 2)
+    {
+        openCV.subtractionLoop(learnBackground,bMirrorH,bMirrorV,threshold,fBlur,iMinBlobSize, iMaxBlobSize,iMaxBlobNum,bFillHoles,bUseApprox,0,0);
+    }
+    else
+    {
+        // Nothing Error space
+    }
     
-    // Do Blob Assembly
-    openCV.readAndWriteBlobData(backColor,shadowColor);
+    
     
     // If blob detected Start Recording
     if(openCV.isSomeoneThere())
     {
+        if (!buffers.empty())
+        {
+            buffers[0].start();
+        }
         startRecording = true;
         hasBeenPushedFlag = false;
     }
@@ -220,6 +248,7 @@ void ofApp::exit()
 {
     guiCV->saveSettings("GUI/CV.xml");
     delete guiCV;
+    openCV.releaseCamera();
     //recorder.stopThread();
 }
 //--------------------------------------------------------------

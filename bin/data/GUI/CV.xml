@@ -1,7 +1,7 @@
 <Widget>
     <Kind>17</Kind>
     <Name>Fullscreen</Name>
-    <Value>1</Value>
+    <Value>0</Value>
 </Widget>
 <Widget>
     <Kind>17</Kind>
@@ -36,7 +36,7 @@
 <Widget>
     <Kind>8</Kind>
     <Name>THRESHOLD</Name>
-    <Value>58.000000000</Value>
+    <Value>20.000000000</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
@@ -66,17 +66,17 @@
 <Widget>
     <Kind>8</Kind>
     <Name>BLUR</Name>
-    <Value>1.000000000</Value>
+    <Value>1.600000024</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
     <Name>BrightnessV</Name>
-    <Value>0.199999928</Value>
+    <Value>0.010000000</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
     <Name>ContrastV</Name>
-    <Value>0.499999434</Value>
+    <Value>0.429999977</Value>
 </Widget>
 <Widget>
     <Kind>17</Kind>
@@ -91,21 +91,21 @@
 <Widget>
     <Kind>28</Kind>
     <Name>Background_Color</Name>
-    <XValue>0.779527545</XValue>
-    <YValue>0.629921257</YValue>
+    <XValue>0.905511796</XValue>
+    <YValue>0.976377964</YValue>
     <RColor>255</RColor>
-    <GColor>148</GColor>
-    <BColor>52</BColor>
+    <GColor>255</GColor>
+    <BColor>255</BColor>
     <AColor>255</AColor>
 </Widget>
 <Widget>
     <Kind>28</Kind>
     <Name>Shadow_Color</Name>
     <XValue>0.503937006</XValue>
-    <YValue>0.496062994</YValue>
-    <RColor>4</RColor>
+    <YValue>0.472440958</YValue>
+    <RColor>16</RColor>
     <GColor>0</GColor>
-    <BColor>7</BColor>
+    <BColor>30</BColor>
     <AColor>255</AColor>
 </Widget>
 <Widget>

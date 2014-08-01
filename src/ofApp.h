@@ -69,5 +69,5 @@ class ofApp : public ofBaseApp{
         int whichMask;
     
         ofColor backColor, shadowColor;
-    
+        int whichBufferAreWePlaying;
 };
