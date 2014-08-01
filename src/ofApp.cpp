@@ -252,9 +252,9 @@ void ofApp::setupGUI()
     guiCV->addWidgetDown(new ofxUILabel("Blur", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 1, "BLUR", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabel("Brighness", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 1, "BrightnessV", OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 2, "BrightnessV", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabel("Contrast", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 1, "ContrastV", OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 2, "ContrastV", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabelToggle("Progressive Background",false,255,30,OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabel("Progression Rate", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetRight(new ofxUINumberDialer(0.00f, 1.00f, 0.01f, 4, "PROGRESSIVE_RATE", OFX_UI_FONT_MEDIUM));

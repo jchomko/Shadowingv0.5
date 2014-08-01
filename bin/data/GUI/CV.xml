@@ -6,7 +6,7 @@
 <Widget>
     <Kind>17</Kind>
     <Name>Draw CV</Name>
-    <Value>1</Value>
+    <Value>0</Value>
 </Widget>
 <Widget>
     <Kind>17</Kind>
@@ -16,7 +16,7 @@
 <Widget>
     <Kind>17</Kind>
     <Name>Draw Live</Name>
-    <Value>0</Value>
+    <Value>1</Value>
 </Widget>
 <Widget>
     <Kind>17</Kind>
@@ -36,7 +36,7 @@
 <Widget>
     <Kind>8</Kind>
     <Name>THRESHOLD</Name>
-    <Value>60.000000000</Value>
+    <Value>58.000000000</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
@@ -71,12 +71,12 @@
 <Widget>
     <Kind>8</Kind>
     <Name>BrightnessV</Name>
-    <Value>1.000000000</Value>
+    <Value>0.199999928</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>
     <Name>ContrastV</Name>
-    <Value>1.000000000</Value>
+    <Value>0.499999434</Value>
 </Widget>
 <Widget>
     <Kind>17</Kind>
@@ -86,26 +86,26 @@
 <Widget>
     <Kind>8</Kind>
     <Name>PROGRESSIVE_RATE</Name>
-    <Value>0.039999999</Value>
+    <Value>1.000000000</Value>
 </Widget>
 <Widget>
     <Kind>28</Kind>
     <Name>Background_Color</Name>
     <XValue>0.779527545</XValue>
-    <YValue>0.842519701</YValue>
+    <YValue>0.629921257</YValue>
     <RColor>255</RColor>
-    <GColor>255</GColor>
-    <BColor>188</BColor>
+    <GColor>148</GColor>
+    <BColor>52</BColor>
     <AColor>255</AColor>
 </Widget>
 <Widget>
     <Kind>28</Kind>
     <Name>Shadow_Color</Name>
-    <XValue>0.535433054</XValue>
-    <YValue>0.519685030</YValue>
-    <RColor>35</RColor>
-    <GColor>12</GColor>
-    <BColor>0</BColor>
+    <XValue>0.503937006</XValue>
+    <YValue>0.496062994</YValue>
+    <RColor>4</RColor>
+    <GColor>0</GColor>
+    <BColor>7</BColor>
     <AColor>255</AColor>
 </Widget>
 <Widget>
@@ -116,5 +116,5 @@
 <Widget>
     <Kind>8</Kind>
     <Name>Mask_No</Name>
-    <Value>1.000000000</Value>
+    <Value>2.000000000</Value>
 </Widget>
