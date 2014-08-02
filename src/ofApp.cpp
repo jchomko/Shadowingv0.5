@@ -23,9 +23,11 @@ void ofApp::update()
     // If we have %i buffers in the memory then release one
     if (buffers.size() >= howManyBuffersToStore)
     {
-        buffers.erase(buffers.begin(), buffers.begin()+1);
-        //buffers.pop_back();
+        //buffers[buffers.size()].gifMaker.exit();
+        //buffers.erase(buffers.begin(), buffers.begin()+1);
+        buffers.pop_back();
     }
+    
     //--------------------------------------------------------------
     
     // Custom CV mechanisms
@@ -33,7 +35,7 @@ void ofApp::update()
     if (mode == 0)
     {
         // Subtraction Plus Brightness and Contrast Settings
-        openCV.subtractionLoop(learnBackground, bProgressiveLearning,fProgressiveRate,bMirrorH,bMirrorV,threshold,fBlur,iMinBlobSize, iMaxBlobSize,iMaxBlobNum,bFillHoles,bUseApprox);
+        openCV.subtractionLoop(learnBackground, bProgressiveLearning,fProgressiveRate,bMirrorH,bMirrorV,threshold,fBlur,iMinBlobSize, iMaxBlobSize,iMaxBlobNum,bFillHoles,bUseApprox,erode,dilate);
         // Do Blob Assembly
         openCV.readAndWriteBlobData(backColor,shadowColor);
     }
@@ -104,13 +106,14 @@ void ofApp::update()
             {
                 // Capture the CV image
                 videoImage.push_back(openCV.getRecordPixels());
+                
                 blobPath.push_back(openCV.getBlobPath());
             }
         }
     }
     else if (!startRecording)
     {
-        
+    
     
     }
     // Update the buffer progressors
@@ -121,12 +124,11 @@ void ofApp::update()
             buffers[i].update();
         }
     }
-    
 }
 //--------------------------------------------------------------
 void ofApp::draw()
 {
-    ofBackground(0, 0, 0);
+    ofBackground(backColor);
     
     ofPushStyle();
     // These are the different playmodes See the Functions for their descriptions
@@ -164,16 +166,20 @@ void ofApp::draw()
         ofDisableAlphaBlending();
     }
     
+    ofPushStyle();
     // Draw all the CV Stuff
     if(drawCV == true)
     {
         openCV.draw();
     }
+    
     // Draw only the Live input in Grayscale
     if(drawLiveImage == true)
     {
         openCV.drawLive();
     }
+    ofPopStyle();
+    
     ofPushStyle();
     // Show the previous Buffers
     if (showPreviousBuffers)
@@ -188,6 +194,12 @@ void ofApp::draw()
         }
     }
     ofPopStyle();
+    
+    // Debug for information about the buffers and openCV
+    if (canDrawData == true)
+    {
+        drawData();
+    }
 }
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key)
@@ -244,7 +256,6 @@ void ofApp::setupVariables()
     progress = 0;
     whichMask = 1;
     whichBufferAreWePlaying = 0;
-    ofClamp(whichBufferAreWePlaying, 0, 5);
     hasBeenPushedFlag = true;
     learnBackground = true;
 }
@@ -277,24 +288,23 @@ void ofApp::exit()
 {
     guiCV->saveSettings("GUI/CV.xml");
     delete guiCV;
-    openCV.releaseCamera();
 }
+
 //--------------------------------------------------------------
 //* Here are all the Buffer Playback functions
 //--------------------------------------------------------------
+
+//--------------------------------------------------------------
+//* Default - If Someone walks through the Camera view play the last persons buffer
+//--------------------------------------------------------------
 void ofApp::playOneBufferTriggered()
 {
-    // If Someone walks through the Camera view play the last persons buffer
-    if(openCV.isSomeoneThere()) // if So
+    if(openCV.isSomeoneThere())
     {
         if (!buffers.empty())
         {
             buffers[0].start();
         }
-    }
-    else
-    {
-        
     }
     
     // Draw the first buffer in the Vector
@@ -304,10 +314,12 @@ void ofApp::playOneBufferTriggered()
     }
 }
 //--------------------------------------------------------------
+//* Live and kicking - If Someone walks through the Camera view, play the last persons buffer
+//* and Simultaneously play the current shadow view.
+//--------------------------------------------------------------
 void ofApp::playLiveImageWithBufferTriggered()
 {
-    // If Someone walks through the Camera view play the last persons buffer
-    if(openCV.isSomeoneThere()) // if So
+    if(openCV.isSomeoneThere())
     {
         if (!buffers.empty())
         {
@@ -318,12 +330,26 @@ void ofApp::playLiveImageWithBufferTriggered()
     // Draw the first buffer in the Vector
     if (!buffers.empty())
     {
-        ofEnableBlendMode(OF_BLENDMODE_ADD);
-        buffers[0].draw();
+        
         openCV.drawLiveShadow();
+        if (backColor.getBrightness() >=125)
+        {
+            ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
+        }
+        else if (backColor.getBrightness() <= 124)
+        {
+            ofEnableBlendMode(OF_BLENDMODE_ADD);
+        }
+        else
+        {
+            
+        }
+        buffers[0].draw();
         ofDisableBlendMode();
     }
 }
+//--------------------------------------------------------------
+//* Dream state - play all the buffers in memory simultaneously
 //--------------------------------------------------------------
 void ofApp::playAllBuffersLayered()
 {
@@ -351,39 +377,37 @@ void ofApp::playAllBuffersLayered()
     {
         for (int i = 0; i < buffers.size(); i++)
         {
-            ofEnableBlendMode(OF_BLENDMODE_ADD);
+            if (backColor.getBrightness() >=125)
+            {
+                ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
+            }
+            else if (backColor.getBrightness() <= 124)
+            {
+                ofEnableBlendMode(OF_BLENDMODE_ADD);
+            }
+            else
+            {
+                
+            }
+
             buffers[i].draw();
             ofDisableBlendMode();
         }
     }
 }
 //--------------------------------------------------------------
+//* Sequential Buffers Triggered - If someone walks through the camera's view
+//* loop through all of the Image buffers sequentially
+//--------------------------------------------------------------
 void ofApp::playAllBuffersSequentiallyTriggered()
 {
-    // Draw the first buffer in the Vector
-    if (!buffers.empty())
+    if(openCV.isSomeoneThere())
     {
-        buffers[whichBufferAreWePlaying].start();
-        buffers[whichBufferAreWePlaying].draw();
-        
-        if (buffers.size() > 2)
-        {
-            if (buffers[whichBufferAreWePlaying].isFinished())
-            {
-                whichBufferAreWePlaying++;
-                buffers[whichBufferAreWePlaying].start();
-            }
-        }
-        if (whichBufferAreWePlaying >= buffers.size())
-        {
-            // Go back to the start and Await my instructions
-            whichBufferAreWePlaying = 0;
-            buffers[whichBufferAreWePlaying].start();
-        }
+        playBuffersWithNoOneThere();
     }
-    
-    
 }
+//--------------------------------------------------------------
+//* Sequential Buffers - Loop through all of the Image buffers sequentially
 //--------------------------------------------------------------
 void ofApp::playBuffersWithNoOneThere()
 {
@@ -411,15 +435,16 @@ void ofApp::playBuffersWithNoOneThere()
     }
 }
 //--------------------------------------------------------------
-//* Here are all the Buffer Playback functions
+//*
+//*
 //--------------------------------------------------------------
 void ofApp::setupGUI()
 {
     colorSampler = new ofImage();
     colorSampler->loadImage("GUI/colorSamplerImage.png");
     
-    guiCV = new ofxUICanvas(0,0,500,600);
-    guiCV->setTheme(OFX_UI_THEME_HACKER);
+    guiCV = new ofxUICanvas(0,0,600,600);
+    guiCV->setColorBack(ofColor::black);
     guiCV->addWidgetDown(new ofxUILabel("Shadowing Stage 0.5", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabelToggle("Fullscreen",true,255/2,30,OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabelToggle("Draw CV",true,255/2,30,OFX_UI_FONT_MEDIUM));
@@ -449,6 +474,8 @@ void ofApp::setupGUI()
     guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 2, "BrightnessV", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabel("Contrast", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 2, "ContrastV", OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetDown(new ofxUILabelToggle("Erode",false,255/2,30,OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetRight(new ofxUILabelToggle("Dilate",false,255/2,30,OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabelToggle("Progressive Background",false,255,30,OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabel("Progression Rate", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetRight(new ofxUINumberDialer(0.00f, 1.00f, 0.01f, 4, "PROGRESSIVE_RATE", OFX_UI_FONT_MEDIUM));
@@ -515,6 +542,16 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
     {
         ofxUILabelToggle * toggle = (ofxUILabelToggle *) e.widget;
         ofSetFullscreen(toggle->getValue());
+    }
+    else if(e.getName() == "Erode")
+    {
+        ofxUILabelToggle * toggle = (ofxUILabelToggle *) e.widget;
+        erode = toggle->getValue();
+    }
+    else if(e.getName() == "Dilate")
+    {
+        ofxUILabelToggle * toggle = (ofxUILabelToggle *) e.widget;
+        dilate = toggle->getValue();
     }
     else if(e.getName() == "Show Buffers")
     {
@@ -586,4 +623,35 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
         ofxUIImageSampler *sampler = (ofxUIImageSampler *) e.widget;
         shadowColor = sampler->getColor();
     }
+    else if (e.getName() == "Show Data")
+    {
+        ofxUILabelToggle * toggle = (ofxUILabelToggle *) e.widget;
+        canDrawData = toggle->getValue();
+    }
+}
+//--------------------------------------------------------------
+void ofApp::drawData()
+{
+    ofSetColor(255);
+    stringstream debugData;
+    
+    debugData << "Shadowing Unit " << "City Centre" << endl;
+    debugData << "Buffers" << endl;
+    if (!buffers.empty())
+    {
+        for (int i = 0; i < buffers.size(); i++)
+        {
+            debugData << "Buffer " << i << " has " << buffers[i].getNumberOfFrames() << " of Frames" << endl;
+        }
+    }
+    debugData << "openCV" << endl;
+    debugData << "Currently Tracking " << openCV.getNumberOfBlobs() << " No of Blobs " << endl;
+    
+    debugData << "FBO Current Brightness " << backColor.getBrightness() << endl;
+    
+    
+    
+    
+    ofDrawBitmapStringHighlight(debugData.str(), 10,10);
+    
 }

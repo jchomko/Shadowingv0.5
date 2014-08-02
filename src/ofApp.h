@@ -45,6 +45,8 @@ class ofApp : public ofBaseApp{
         bool bMirrorH;
         bool bMirrorV;
         float fBlur;
+        bool erode;
+        bool dilate;
         vector<ofVec2f> blobPath;
     
         // GUI
@@ -86,7 +88,12 @@ class ofApp : public ofBaseApp{
         bool hasBeenPushedFlag;
     
     
+        // Debug Stuff
+        void drawData();
+        bool canDrawData;
         // Dev and Iteration Two
         // ofxHttpUtils httpPost;
+    
+    
     
 };
