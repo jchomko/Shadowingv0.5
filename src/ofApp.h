@@ -2,7 +2,6 @@
 
 #include "ofMain.h"
 #include "OCV.h"
-//#include "ofxOpenCV.h"
 #include "ofxSimpleTimer.h"
 #include "ofxUI.h"
 #include "VideoBufferStorage.h"
@@ -10,8 +9,6 @@
 #define CAM_WIDTH 320
 #define CAM_HEIGHT 240
 #define FRAMERATE 30
-
-
 
 class ofApp : public ofBaseApp{
 
@@ -30,11 +27,10 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
     
-    
         void exit();
         void setupVariables();
     
-        // openCV
+        // OPEN CV
         CV openCV;
         bool learnBackground;
         bool bProgressiveLearning;
@@ -70,7 +66,7 @@ class ofApp : public ofBaseApp{
         int progress;
     
         // Video Buffer Stuff
-        void playAllBuffersSequentially();
+        void playAllBuffersSequentiallyTriggered();
         void playOneBufferTriggered();
         void playLiveImageWithBufferTriggered();
         void playAllBuffersLayered();
@@ -79,7 +75,7 @@ class ofApp : public ofBaseApp{
         std::deque<videoBuffer> buffers;
         vector<ofImage> videoImage;
     
-        int mode;
+        int playbackMode;
         int howManyBuffersToStore;
         bool showPreviousBuffers;
         int whichBufferAreWePlaying;
@@ -88,4 +84,9 @@ class ofApp : public ofBaseApp{
         bool drawCV;
         bool drawLiveImage;
         bool hasBeenPushedFlag;
+    
+    
+        // Dev and Iteration Two
+        // ofxHttpUtils httpPost;
+    
 };

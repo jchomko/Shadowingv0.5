@@ -25,6 +25,11 @@
 </Widget>
 <Widget>
     <Kind>8</Kind>
+    <Name>PLAYBACK_MODE</Name>
+    <Value>4.000000000</Value>
+</Widget>
+<Widget>
+    <Kind>8</Kind>
     <Name>BUFFER_NUMBER</Name>
     <Value>7.000000000</Value>
 </Widget>
@@ -41,7 +46,7 @@
 <Widget>
     <Kind>8</Kind>
     <Name>THRESHOLD</Name>
-    <Value>40.000000000</Value>
+    <Value>65.000000000</Value>
 </Widget>
 <Widget>
     <Kind>8</Kind>

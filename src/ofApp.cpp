@@ -129,11 +129,31 @@ void ofApp::draw()
     ofBackground(0, 0, 0);
     
     ofPushStyle();
-    // These are the different playmodes See Functions for descriptions
-    // playOneBufferTriggered();
-    // playAllBuffersLayered();
-    // playBuffersWithNoOneThere();
-    // playAllBuffersSequentially();
+    // These are the different playmodes See the Functions for their descriptions
+    if (playbackMode == 0)
+    {
+        playOneBufferTriggered();
+    }
+    else if (playbackMode == 1)
+    {
+        playLiveImageWithBufferTriggered();
+    }
+    else if (playbackMode == 2)
+    {
+        playAllBuffersLayered();
+    }
+    else if (playbackMode == 3)
+    {
+        playBuffersWithNoOneThere();
+    }
+    else if (playbackMode == 4)
+    {
+        playAllBuffersSequentiallyTriggered();
+    }
+    else
+    {
+        // Nothing
+    }
     ofPopStyle();
 
     if (drawMask)
@@ -148,7 +168,6 @@ void ofApp::draw()
     if(drawCV == true)
     {
         openCV.draw();
-        //openCV.drawAllPaths();
     }
     // Draw only the Live input in Grayscale
     if(drawLiveImage == true)
@@ -270,10 +289,7 @@ void ofApp::playOneBufferTriggered()
     {
         if (!buffers.empty())
         {
-            for (int i = 0; i < buffers.size(); i++)
-            {
-                buffers[0].start();
-            }
+            buffers[0].start();
         }
     }
     else
@@ -295,26 +311,18 @@ void ofApp::playLiveImageWithBufferTriggered()
     {
         if (!buffers.empty())
         {
-            for (int i = 0; i < buffers.size(); i++)
-            {
-                buffers[0].start();
-            }
+            buffers[0].start();
         }
     }
-    else
-    {
-        
-    }
-    
+   
     // Draw the first buffer in the Vector
     if (!buffers.empty())
     {
-        ofEnableAlphaBlending();
+        ofEnableBlendMode(OF_BLENDMODE_ADD);
         buffers[0].draw();
         openCV.drawLiveShadow();
-        ofDisableAlphaBlending();
+        ofDisableBlendMode();
     }
-
 }
 //--------------------------------------------------------------
 void ofApp::playAllBuffersLayered()
@@ -350,6 +358,59 @@ void ofApp::playAllBuffersLayered()
     }
 }
 //--------------------------------------------------------------
+void ofApp::playAllBuffersSequentiallyTriggered()
+{
+    // Draw the first buffer in the Vector
+    if (!buffers.empty())
+    {
+        buffers[whichBufferAreWePlaying].start();
+        buffers[whichBufferAreWePlaying].draw();
+        
+        if (buffers.size() > 2)
+        {
+            if (buffers[whichBufferAreWePlaying].isFinished())
+            {
+                whichBufferAreWePlaying++;
+                buffers[whichBufferAreWePlaying].start();
+            }
+        }
+        if (whichBufferAreWePlaying >= buffers.size())
+        {
+            // Go back to the start and Await my instructions
+            whichBufferAreWePlaying = 0;
+            buffers[whichBufferAreWePlaying].start();
+        }
+    }
+    
+    
+}
+//--------------------------------------------------------------
+void ofApp::playBuffersWithNoOneThere()
+{
+    // Check if the buffers are live. Start and Draw the first element in the vector.
+    // When the buffer has finished playing the iterate to the next buffer
+    if (!buffers.empty())
+    {
+        buffers[whichBufferAreWePlaying].start();
+        buffers[whichBufferAreWePlaying].draw();
+        
+        if (buffers.size() > 2)
+        {
+            if (buffers[whichBufferAreWePlaying].isFinished())
+            {
+                whichBufferAreWePlaying++;
+                buffers[whichBufferAreWePlaying].start();
+            }
+        }
+        if (whichBufferAreWePlaying >= buffers.size())
+        {
+            // Go back to the start and Await my instructions
+            whichBufferAreWePlaying = 0;
+            buffers[whichBufferAreWePlaying].start();
+        }
+    }
+}
+//--------------------------------------------------------------
 //* Here are all the Buffer Playback functions
 //--------------------------------------------------------------
 void ofApp::setupGUI()
@@ -365,6 +426,8 @@ void ofApp::setupGUI()
     guiCV->addWidgetRight(new ofxUILabelToggle("Show Buffers",true,255/2,30,OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabelToggle("Draw Live",false,255/2,30,OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetRight(new ofxUILabelToggle("Show Data",true,255/2,30,OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetDown(new ofxUILabel("Playback Mode", OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetRight(new ofxUINumberDialer(0, 6,1, 0, "PLAYBACK_MODE", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabel("Number of Bufferss", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetRight(new ofxUINumberDialer(0, 15,5, 0, "BUFFER_NUMBER", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabelButton("Learn Background",false,255,30,OFX_UI_FONT_MEDIUM));
@@ -412,6 +475,11 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
     {
         ofxUILabelToggle * toggle = (ofxUILabelToggle *) e.widget;
         drawMask = toggle->getValue();
+    }
+    else if(e.getName() == "PLAYBACK_MODE")
+    {
+        ofxUINumberDialer * dial = (ofxUINumberDialer *) e.widget;
+        playbackMode = dial->getValue();
     }
     else if(e.getName() == "Mask_No")
     {
