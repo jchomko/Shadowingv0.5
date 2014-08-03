@@ -1,5 +1,11 @@
+//--------------------------------------------------------------
+//* Name: Shadowing.cpp
+//* Project: Playable City 2014 Award
+//* Author: David Haylock
+//* Creation Date: 30-07-2014
+//* Copyright: (c) 2014 by Watershed Arts Trust Ltd.
+//--------------------------------------------------------------
 #include "ofApp.h"
-
 //--------------------------------------------------------------
 void ofApp::setup()
 {
@@ -18,9 +24,13 @@ void ofApp::setup()
 //--------------------------------------------------------------
 void ofApp::update()
 {
+#ifdef RPI
+    // Title Window Does not work with RPi
+#else
     // Set Window Title
     string title = "Shadowing Stage 0.5: " + ofToString(ofGetTimestampString("%H:%M:%S  %d/%m/%Y"));
     ofSetWindowTitle(title);
+#endif
     
     //--------------------------------------------------------------
     // If we have %i buffers in the memory then release one
@@ -168,7 +178,7 @@ void ofApp::draw()
     }
     else if (playbackMode == 6)
     {
-        // Delayed Shadow
+        // Shadow Reversed
         playSlowMirroredShadow();
     }
     else
@@ -225,19 +235,10 @@ void ofApp::keyPressed(int key)
 {
     if (key == 'h')
     {
-        guiCV->toggleVisible();
-    }
-    if(key == 'i')
-    {
-        ofImage img;
-        img.allocate(CAM_WIDTH,CAM_HEIGHT,OF_IMAGE_COLOR);
-        img.setFromPixels(videoImage[videoImage.size()/2].getPixels(),CAM_WIDTH,CAM_HEIGHT,OF_IMAGE_COLOR);
-        img.saveImage("test.png");
+        gui->toggleVisible();
     }
     if(key == 'p')
     {
-        
-        
         ofxHttpForm form;
         form.action = action_url;
         form.method = OFX_HTTP_POST;
@@ -289,8 +290,8 @@ void ofApp::dragEvent(ofDragInfo dragInfo)
 //--------------------------------------------------------------
 void ofApp::exit()
 {
-    guiCV->saveSettings("GUI/CV.xml");
-    delete guiCV;
+    gui->saveSettings("GUI/Settings.xml");
+    delete gui;
 }
 //--------------------------------------------------------------
 //* Other Stuff
@@ -638,53 +639,57 @@ void ofApp::setupGUI()
     colorSampler = new ofImage();
     colorSampler->loadImage("GUI/colorSamplerImage.png");
     
-    guiCV = new ofxUICanvas(0,0,600,600);
-    guiCV->setColorBack(ofColor::black);
-    guiCV->addWidgetDown(new ofxUILabel("Shadowing Stage 0.5", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabelToggle("Fullscreen",true,255/2,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabelToggle("Draw CV",true,255/2,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUILabelToggle("Show Buffers",true,255/2,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabelToggle("Draw Live",false,255/2,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUILabelToggle("Show Data",true,255/2,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabel("Playback Mode", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUINumberDialer(0, 6,1, 0, "PLAYBACK_MODE", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabel("Number of Bufferss", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUINumberDialer(0, 15,5, 0, "BUFFER_NUMBER", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabelButton("Learn Background",false,255,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabelToggle("Mirror H",false,255/2,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUILabelToggle("Mirror V",false,255/2,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabel("Threshold", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUINumberDialer(0, 255, 80, 0, "THRESHOLD", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabel("Min Blob Size", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUINumberDialer(0, (CAM_WIDTH*CAM_HEIGHT)/3, 20, 1, "MIN_BLOB_SIZE", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabel("Max Blob Size", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUINumberDialer(0, (CAM_WIDTH*CAM_HEIGHT), (CAM_WIDTH*CAM_HEIGHT)/3, 1, "MAX_BLOB_SIZE", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabel("Max Num Blob", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUINumberDialer(0, 10, 2, 0, "MAX_BLOB_NUM", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabelToggle("Fill Holes",false,255/2,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUILabelToggle("Use Approximation",false,255/2,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabel("Blur", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 1, "BLUR", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabel("Brightness", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 2, "BrightnessV", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabel("Contrast", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 2, "ContrastV", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabelToggle("Erode",false,255/2,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUILabelToggle("Dilate",false,255/2,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabelToggle("Progressive Background",false,255,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabel("Progression Rate", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUINumberDialer(0.00f, 1.00f, 0.01f, 4, "PROGRESSIVE_RATE", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabel("BGL","Background Color", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUIImageSampler(255/2, 255/2, colorSampler, "Background_Color"));
-    guiCV->addWidgetEastOf(new ofxUILabel("Shadow Color", OFX_UI_FONT_MEDIUM),"BGL");
-    guiCV->addWidgetEastOf(new ofxUIImageSampler(255/2, 255/2, colorSampler, "Shadow_Color"),"Background_Color");
-    guiCV->addWidgetDown(new ofxUILabelToggle("Use Mask",true,255/2,30,OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabel("Mask Number", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetRight(new ofxUINumberDialer(0, 5, 1, 0, "Mask_No", OFX_UI_FONT_MEDIUM));
-    guiCV->autoSizeToFitWidgets();
+    gui = new ofxUICanvas(0,0,600,600);
+    gui->setColorBack(ofColor::black);
+    gui->addWidgetDown(new ofxUILabel("Shadowing", OFX_UI_FONT_MEDIUM));
+    gui->addSpacer(255,1);
+    gui->addWidgetDown(new ofxUILabelToggle("Fullscreen",true,255,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabelToggle("Production Mode",false,255,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabelToggle("Draw CV",true,255/2,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUILabelToggle("Show Buffers",true,255/2,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabelToggle("Draw Live",false,255/2,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUILabelToggle("Show Data",true,255/2,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabel("Playback Mode", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUINumberDialer(0, 6,1, 0, "PLAYBACK_MODE", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabel("Number of Bufferss", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUINumberDialer(0, 15,5, 0, "BUFFER_NUMBER", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabelToggle("Use Mask",true,255/2,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabel("Mask Number", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUINumberDialer(0, 5, 1, 0, "Mask_No", OFX_UI_FONT_MEDIUM));
+    gui->addSpacer(255,1);
+    gui->addWidgetDown(new ofxUILabelButton("Learn Background",false,255,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabelToggle("Mirror H",false,255/2,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUILabelToggle("Mirror V",false,255/2,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabel("Threshold", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUINumberDialer(0, 255, 80, 0, "THRESHOLD", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabel("Min Blob Size", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUINumberDialer(0, (CAM_WIDTH*CAM_HEIGHT)/3, 20, 1, "MIN_BLOB_SIZE", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabel("Max Blob Size", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUINumberDialer(0, (CAM_WIDTH*CAM_HEIGHT), (CAM_WIDTH*CAM_HEIGHT)/3, 1, "MAX_BLOB_SIZE", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabel("Max Num Blob", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUINumberDialer(0, 10, 2, 0, "MAX_BLOB_NUM", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabelToggle("Fill Holes",false,255/2,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUILabelToggle("Use Approximation",false,255/2,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabel("Blur", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 1, "BLUR", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabel("Brightness", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 2, "BrightnessV", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabel("Contrast", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 2, "ContrastV", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabelToggle("Erode",false,255/2,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUILabelToggle("Dilate",false,255/2,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabelToggle("Progressive Background",false,255,30,OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUILabel("Progression Rate", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetRight(new ofxUINumberDialer(0.00f, 1.00f, 0.01f, 4, "PROGRESSIVE_RATE", OFX_UI_FONT_MEDIUM));
+    gui->addSpacer(255,1);
+    gui->addWidgetDown(new ofxUILabel("BGL","Background Color", OFX_UI_FONT_MEDIUM));
+    gui->addWidgetDown(new ofxUIImageSampler(255/2, 255/2, colorSampler, "Background_Color"));
+    gui->addWidgetEastOf(new ofxUILabel("Shadow Color", OFX_UI_FONT_MEDIUM),"BGL");
+    gui->addWidgetEastOf(new ofxUIImageSampler(255/2, 255/2, colorSampler, "Shadow_Color"),"Background_Color");
+    gui->autoSizeToFitWidgets();
     
-    ofAddListener(guiCV->newGUIEvent,this, &ofApp::guiEvent);
-    guiCV->loadSettings("GUI/CV.xml");
+    ofAddListener(gui->newGUIEvent,this, &ofApp::guiEvent);
+    gui->loadSettings("GUI/Settings.xml");
 }
 //--------------------------------------------------------------
 void ofApp::guiEvent(ofxUIEventArgs &e)
@@ -832,9 +837,11 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
 void ofApp::drawData()
 {
     ofSetColor(255);
-    
+    string title = "Shadowing " + ofToString(ofGetTimestampString("%H:%M:%S  %d/%m/%Y"));
     stringstream debugData;
-    debugData << "Shadowing Unit " << "City Centre" << endl;
+    debugData << title << endl;
+    debugData << "Unit " << "City Centre" << endl;
+    
     debugData << endl;
     debugData << "BUFFERS" << endl;
     debugData << "Maximum Buffer Size: " << howManyBuffersToStore << endl;
@@ -866,6 +873,13 @@ void ofApp::drawData()
     
     
     
+    if (showPreviousBuffers == true)
+    {
+        ofDrawBitmapStringHighlight(debugData.str(), 80,10);
+    }
+    else
+    {
+        ofDrawBitmapStringHighlight(debugData.str(), 5,10);
+    }
     
-    ofDrawBitmapStringHighlight(debugData.str(), 80,10);
 }

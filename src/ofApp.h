@@ -1,3 +1,11 @@
+//--------------------------------------------------------------
+//* Name: Shadowing.h
+//* Project: Playable City 2014 Award
+//* Author: David Haylock
+//* Creation Date: 30-07-2014
+//* Copyright: (c) 2014 by Watershed Arts Trust Ltd.
+//--------------------------------------------------------------
+
 #pragma once
 
 #include "ofMain.h"
@@ -10,6 +18,8 @@
 #define CAM_WIDTH 320
 #define CAM_HEIGHT 240
 #define FRAMERATE 30
+
+//#define RPI
 
 class ofApp : public ofBaseApp{
 
@@ -53,7 +63,7 @@ class ofApp : public ofBaseApp{
         // GUI
         void setupGUI();
         void guiEvent(ofxUIEventArgs &e);
-        ofxUICanvas *guiCV;
+        ofxUICanvas *gui;
         ofImage *colorSampler;
         
         // Masks
