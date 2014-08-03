@@ -10,8 +10,10 @@ void ofApp::setup()
     setupMasks();
     // Setup the GUI
     setupGUI();
+    // Setup the Timer
+    setupTimer();
     // Setup Custom openCV Class
-    openCV.setup(CAM_WIDTH,CAM_HEIGHT,FRAMERATE);
+    openCV.setup(CAM_WIDTH,CAM_HEIGHT,FRAMERATE);    
 }
 //--------------------------------------------------------------
 void ofApp::update()
@@ -19,15 +21,13 @@ void ofApp::update()
     // Set Window Title
     string title = "Shadowing Stage 0.5: " + ofToString(ofGetTimestampString("%H:%M:%S  %d/%m/%Y"));
     ofSetWindowTitle(title);
+    
     //--------------------------------------------------------------
     // If we have %i buffers in the memory then release one
-    if (buffers.size() >= howManyBuffersToStore)
+    if (buffers.size() > howManyBuffersToStore)
     {
-        //buffers[buffers.size()].gifMaker.exit();
-        //buffers.erase(buffers.begin(), buffers.begin()+1);
         buffers.pop_back();
     }
-    
     //--------------------------------------------------------------
     
     // Custom CV mechanisms
@@ -59,6 +59,8 @@ void ofApp::update()
     // If blob detected Start Recording
     if(openCV.isSomeoneThere())
     {
+        //playbackMode = 5;
+        activityTimer.stop();
         startRecording = true;
         hasBeenPushedFlag = false;
     }
@@ -69,7 +71,7 @@ void ofApp::update()
         {
             if (videoImage.size() >= 30)// && !blobPath.empty())
             {
-                ofLog(OF_LOG_NOTICE, "Buffers Ok");
+                ofLog(OF_LOG_NOTICE, "Buffer Ok");
                 videoBuffer b;
                 b.getNewImages(videoImage);
                 //b.getPath(blobPath);
@@ -77,6 +79,7 @@ void ofApp::update()
                 videoImage.clear();
                 //blobPath.clear();
                 hasBeenPushedFlag = true;
+                activityTimer.start(false);
             }
             else if(videoImage.size() < 30)
             {
@@ -87,17 +90,19 @@ void ofApp::update()
             }
             else
             {
-                ofLog(OF_LOG_NOTICE,"Nope you shouldn't be here Video Size sections");
+                ofLog(OF_LOG_NOTICE,"Nope you shouldn't be here in Video Size");
             }
         }
         else
         {
             //Do nothing
         }
+       
     }
     
     if(startRecording == true)
     {
+        
         // If new frame
         if (openCV.newFrame())
         {
@@ -106,15 +111,13 @@ void ofApp::update()
             {
                 // Capture the CV image
                 videoImage.push_back(openCV.getRecordPixels());
-                
                 blobPath.push_back(openCV.getBlobPath());
             }
         }
     }
     else if (!startRecording)
     {
-    
-    
+        
     }
     // Update the buffer progressors
     if (!buffers.empty())
@@ -124,6 +127,7 @@ void ofApp::update()
             buffers[i].update();
         }
     }
+    //activityTimer.update();
 }
 //--------------------------------------------------------------
 void ofApp::draw()
@@ -134,23 +138,38 @@ void ofApp::draw()
     // These are the different playmodes See the Functions for their descriptions
     if (playbackMode == 0)
     {
+        // Default
         playOneBufferTriggered();
     }
     else if (playbackMode == 1)
     {
+        // Default Plus Live Image
         playLiveImageWithBufferTriggered();
     }
     else if (playbackMode == 2)
     {
+        // Dream State 1 - Day Dreaming
         playAllBuffersLayered();
     }
     else if (playbackMode == 3)
     {
+        // Dream State 2 - Sequential Dreaming
         playBuffersWithNoOneThere();
     }
     else if (playbackMode == 4)
     {
+        // Default Sequential
         playAllBuffersSequentiallyTriggered();
+    }
+    else if (playbackMode == 5)
+    {
+        // Delayed Shadow
+        playSlowShadow();
+    }
+    else if (playbackMode == 6)
+    {
+        // Delayed Shadow
+        playSlowMirroredShadow();
     }
     else
     {
@@ -208,6 +227,24 @@ void ofApp::keyPressed(int key)
     {
         guiCV->toggleVisible();
     }
+    if(key == 'i')
+    {
+        ofImage img;
+        img.allocate(CAM_WIDTH,CAM_HEIGHT,OF_IMAGE_COLOR);
+        img.setFromPixels(videoImage[videoImage.size()/2].getPixels(),CAM_WIDTH,CAM_HEIGHT,OF_IMAGE_COLOR);
+        img.saveImage("test.png");
+    }
+    if(key == 'p')
+    {
+        
+        
+        ofxHttpForm form;
+        form.action = action_url;
+        form.method = OFX_HTTP_POST;
+        form.addFormField("Last Record Time",ofGetTimestampString());
+        httpUtils.addForm(form);
+        requestStr = "message sent: " + ofGetTimestampString();
+    }
 }
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key)
@@ -250,6 +287,15 @@ void ofApp::dragEvent(ofDragInfo dragInfo)
 
 }
 //--------------------------------------------------------------
+void ofApp::exit()
+{
+    guiCV->saveSettings("GUI/CV.xml");
+    delete guiCV;
+}
+//--------------------------------------------------------------
+//* Other Stuff
+//--------------------------------------------------------------
+//--------------------------------------------------------------
 void ofApp::setupVariables()
 {
     howManyBuffersToStore = 5;
@@ -258,7 +304,17 @@ void ofApp::setupVariables()
     whichBufferAreWePlaying = 0;
     hasBeenPushedFlag = true;
     learnBackground = true;
+    
+    action_url = "http://localhost:8888/upload.php";
+	ofAddListener(httpUtils.newResponseEvent,this,&ofApp::newResponse);
+	httpUtils.start();
 }
+//--------------------------------------------------------------
+void ofApp::newResponse(ofxHttpResponse & response)
+{
+	responseStr = ofToString(response.status) + ": " + (string)response.responseBody;
+}
+
 //--------------------------------------------------------------
 void ofApp::setupMasks()
 {
@@ -271,7 +327,7 @@ void ofApp::setupMasks()
     
     if(nFiles)
     {
-        ofLog(OF_LOG_ERROR, "Found Mask Folder");
+        ofLog(OF_LOG_NOTICE, "Found Mask Folder");
         for(int i = 0; i< maskDirectory.numFiles(); i++)
         {
             string filePath = maskDirectory.getPath(i);
@@ -284,34 +340,60 @@ void ofApp::setupMasks()
     }
 }
 //--------------------------------------------------------------
-void ofApp::exit()
+//* Timers
+//--------------------------------------------------------------
+//--------------------------------------------------------------
+void ofApp::setupTimer()
 {
-    guiCV->saveSettings("GUI/CV.xml");
-    delete guiCV;
+    activityTimer.setup(5000);
+    ofAddListener(activityTimer.TIMER_STARTED, this, &ofApp::timerStarted);
+    ofAddListener(activityTimer.TIMER_COMPLETE, this, &ofApp::timerComplete);
 }
-
+//--------------------------------------------------------------
+void ofApp::timerComplete(int &args)
+{
+    cout << "Timer Done" << endl;
+    playbackMode = 2;
+}
+//--------------------------------------------------------------
+void ofApp::timerStarted(int &args)
+{
+    cout << "Timer Start" << endl;
+}
 //--------------------------------------------------------------
 //* Here are all the Buffer Playback functions
 //--------------------------------------------------------------
-
 //--------------------------------------------------------------
 //* Default - If Someone walks through the Camera view play the last persons buffer
 //--------------------------------------------------------------
 void ofApp::playOneBufferTriggered()
 {
+    modeString = "Default";
     if(openCV.isSomeoneThere())
     {
         if (!buffers.empty())
         {
             buffers[0].start();
+            buffers[0].draw();
         }
     }
     
-    // Draw the first buffer in the Vector
     if (!buffers.empty())
     {
-        buffers[0].draw();
+        if (!openCV.isSomeoneThere() && !buffers[0].isFinished())
+        {
+            buffers[0].draw();
+        }
+        else if(!openCV.isSomeoneThere() && buffers[0].isFinished())
+        {
+            
+        }
+        else
+        {
+            
+        }
     }
+    
 }
 //--------------------------------------------------------------
 //* Live and kicking - If Someone walks through the Camera view, play the last persons buffer
@@ -319,6 +401,7 @@ void ofApp::playOneBufferTriggered()
 //--------------------------------------------------------------
 void ofApp::playLiveImageWithBufferTriggered()
 {
+    modeString = "Live Image and Buffer";
     if(openCV.isSomeoneThere())
     {
         if (!buffers.empty())
@@ -353,6 +436,7 @@ void ofApp::playLiveImageWithBufferTriggered()
 //--------------------------------------------------------------
 void ofApp::playAllBuffersLayered()
 {
+    modeString = "Dream State";
     if (!buffers.empty())
     {
         for (int i = 0; i < buffers.size(); i++)
@@ -401,9 +485,31 @@ void ofApp::playAllBuffersLayered()
 //--------------------------------------------------------------
 void ofApp::playAllBuffersSequentiallyTriggered()
 {
+    modeString = "Sequential Trigger";
     if(openCV.isSomeoneThere())
     {
-        playBuffersWithNoOneThere();
+        // Check if the buffers are live. Start and Draw the first element in the vector.
+        // When the buffer has finished playing the iterate to the next buffer
+        if (!buffers.empty())
+        {
+            buffers[whichBufferAreWePlaying].start();
+            buffers[whichBufferAreWePlaying].draw();
+            
+            if (buffers.size() > 2)
+            {
+                if (buffers[whichBufferAreWePlaying].isFinished())
+                {
+                    whichBufferAreWePlaying++;
+                    buffers[whichBufferAreWePlaying].start();
+                }
+            }
+            if (whichBufferAreWePlaying >= buffers.size())
+            {
+                // Go back to the start and Await my instructions
+                whichBufferAreWePlaying = 0;
+                buffers[whichBufferAreWePlaying].start();
+            }
+        }
     }
 }
 //--------------------------------------------------------------
@@ -411,6 +517,7 @@ void ofApp::playAllBuffersSequentiallyTriggered()
 //--------------------------------------------------------------
 void ofApp::playBuffersWithNoOneThere()
 {
+    modeString = "Dreaming Sequentially";
     // Check if the buffers are live. Start and Draw the first element in the vector.
     // When the buffer has finished playing the iterate to the next buffer
     if (!buffers.empty())
@@ -435,8 +542,96 @@ void ofApp::playBuffersWithNoOneThere()
     }
 }
 //--------------------------------------------------------------
-//*
-//*
+//* Live Delayed Shadow - Participants Shadow a second behind live action
+//--------------------------------------------------------------
+void ofApp::playSlowShadow()
+{
+    modeString = "Slow Shadow";
+    if (liveShadowProgress <= videoImage.size())
+    {
+        if(ofGetFrameNum() % 1 == 0)
+        {
+            liveShadowProgress++;
+        }
+    }
+    
+    if (liveShadowProgress >= videoImage.size())
+    {
+        liveShadowProgress = 0;
+    }
+    
+    ofSetColor(255);
+    if (!videoImage.empty())
+    {
+        videoImage[liveShadowProgress].draw(0, 0, ofGetWidth(),ofGetHeight());
+    }
+    
+    if(openCV.isSomeoneThere())
+    {
+        if (!buffers.empty())
+        {
+            buffers[0].start();
+        }
+    }
+    
+    // Draw the first buffer in the Vector
+    if (!buffers.empty())
+    {
+        if (backColor.getBrightness() >=125)
+        {
+            ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
+        }
+        else if (backColor.getBrightness() <= 124)
+        {
+            ofEnableBlendMode(OF_BLENDMODE_ADD);
+        }
+        else
+        {
+            
+        }
+        openCV.drawLiveShadow();
+        buffers[0].draw();
+        ofDisableBlendMode();
+    }
+}
+//--------------------------------------------------------------
+//* Live Delayed Mirrored Shadow - Participants Shadow a second behind live action
+//--------------------------------------------------------------
+void ofApp::playSlowMirroredShadow()
+{
+    modeString = "Mirrored Shadow";
+
+    ofSetColor(255);
+    if (!videoImage.empty())
+    {
+        ofImage reverseImg;
+        reverseImg.setFromPixels(openCV.getRecordPixels());
+        reverseImg.mirror(false, true);
+        reverseImg.draw(0,0, ofGetWidth(), ofGetHeight());
+    }
+    
+    // Draw the first buffer in the Vector
+    if (!buffers.empty())
+    {
+        if (backColor.getBrightness() >=125)
+        {
+            ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
+        }
+        else if (backColor.getBrightness() <= 124)
+        {
+            ofEnableBlendMode(OF_BLENDMODE_ADD);
+        }
+        else
+        {
+            
+        }
+        openCV.drawLiveShadow();
+        ofDisableBlendMode();
+    }
+}
+//--------------------------------------------------------------
+//* GUI and Return Values
+//--------------------------------------------------------------
 //--------------------------------------------------------------
 void ofApp::setupGUI()
 {
@@ -470,7 +665,7 @@ void ofApp::setupGUI()
     guiCV->addWidgetRight(new ofxUILabelToggle("Use Approximation",false,255/2,30,OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabel("Blur", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 1, "BLUR", OFX_UI_FONT_MEDIUM));
-    guiCV->addWidgetDown(new ofxUILabel("Brighness", OFX_UI_FONT_MEDIUM));
+    guiCV->addWidgetDown(new ofxUILabel("Brightness", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 2, "BrightnessV", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetDown(new ofxUILabel("Contrast", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetRight(new ofxUINumberDialer(0, 100, 1, 2, "ContrastV", OFX_UI_FONT_MEDIUM));
@@ -487,6 +682,7 @@ void ofApp::setupGUI()
     guiCV->addWidgetDown(new ofxUILabel("Mask Number", OFX_UI_FONT_MEDIUM));
     guiCV->addWidgetRight(new ofxUINumberDialer(0, 5, 1, 0, "Mask_No", OFX_UI_FONT_MEDIUM));
     guiCV->autoSizeToFitWidgets();
+    
     ofAddListener(guiCV->newGUIEvent,this, &ofApp::guiEvent);
     guiCV->loadSettings("GUI/CV.xml");
 }
@@ -630,28 +826,46 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
     }
 }
 //--------------------------------------------------------------
+//* Debug Data
+//--------------------------------------------------------------
+//--------------------------------------------------------------
 void ofApp::drawData()
 {
     ofSetColor(255);
-    stringstream debugData;
     
+    stringstream debugData;
     debugData << "Shadowing Unit " << "City Centre" << endl;
-    debugData << "Buffers" << endl;
+    debugData << endl;
+    debugData << "BUFFERS" << endl;
+    debugData << "Maximum Buffer Size: " << howManyBuffersToStore << endl;
+    debugData << "Current Buffer Size: " << buffers.size() << endl;
+    debugData << "Currently Playing Buffer: " << whichBufferAreWePlaying << endl;
+    debugData << endl;
+    
     if (!buffers.empty())
     {
         for (int i = 0; i < buffers.size(); i++)
         {
-            debugData << "Buffer " << i << " has " << buffers[i].getNumberOfFrames() << " of Frames" << endl;
+            debugData << "Buffer " << i+1 << " has " << buffers[i].getNumberOfFrames() << " Frames" << endl;
         }
     }
-    debugData << "openCV" << endl;
-    debugData << "Currently Tracking " << openCV.getNumberOfBlobs() << " No of Blobs " << endl;
-    
+    debugData << endl;
+    debugData << "OPENCV" << endl;
+    debugData << "Currently Tracking " << openCV.getNumberOfBlobs() << " Number of Blobs " << endl;
+    debugData << endl;
     debugData << "FBO Current Brightness " << backColor.getBrightness() << endl;
+    debugData << endl;
+    debugData << "Current Mode: " << modeString << endl;
+
+    debugData << endl;
+    debugData << endl;
+    
+    debugData << "HTTP Status" << endl;
+    debugData << responseStr << endl;
+    debugData << requestStr << endl;
     
     
     
     
-    ofDrawBitmapStringHighlight(debugData.str(), 10,10);
-    
+    ofDrawBitmapStringHighlight(debugData.str(), 80,10);
 }

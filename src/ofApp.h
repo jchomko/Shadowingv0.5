@@ -5,6 +5,7 @@
 #include "ofxSimpleTimer.h"
 #include "ofxUI.h"
 #include "VideoBufferStorage.h"
+#include "ofxHttpUtils.h"
 
 #define CAM_WIDTH 320
 #define CAM_HEIGHT 240
@@ -73,10 +74,13 @@ class ofApp : public ofBaseApp{
         void playLiveImageWithBufferTriggered();
         void playAllBuffersLayered();
         void playBuffersWithNoOneThere();
+        void playSlowShadow();
+        void playSlowMirroredShadow();
     
         std::deque<videoBuffer> buffers;
         vector<ofImage> videoImage;
     
+        string modeString;
         int playbackMode;
         int howManyBuffersToStore;
         bool showPreviousBuffers;
@@ -86,14 +90,24 @@ class ofApp : public ofBaseApp{
         bool drawCV;
         bool drawLiveImage;
         bool hasBeenPushedFlag;
-    
+        int liveShadowProgress;
     
         // Debug Stuff
         void drawData();
         bool canDrawData;
+    
         // Dev and Iteration Two
-        // ofxHttpUtils httpPost;
+        void newResponse(ofxHttpResponse & response);
+        
+        ofxHttpUtils httpUtils;
+        string responseStr;
+        string requestStr;
+        string action_url;
     
-    
-    
+        // Activity and Mode
+        void setupTimer();
+        bool inactive;
+        ofxSimpleTimer activityTimer;
+        void timerComplete(int &args);
+        void timerStarted(int &args);
 };
