@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>0121D9DB-1EA5-4FE3-B331-C374FCC16480</string>
+	<key>IDESourceControlProjectName</key>
+	<string>ShadowingStage0_5</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>7F009916-13A3-47AE-83B0-1F5EAA3481C0</key>
+		<string>ssh://wcode.org//data/git/wproj/ShadowingFolder/ShadowingCustomAddons/ofxDaveOpenCV/</string>
+		<key>90547504-73EB-45C0-A059-9ED571CCDF15</key>
+		<string>ssh://wcode.org//data/git/wproj/ShadowingFolder/Shadowing001/</string>
+		<key>A3B26C51-A549-4871-A993-CF47080ECDEE</key>
+		<string>ssh://wcode.org//data/git/wproj/ShadowingFolder/ShadowingCustomAddons/ofxDaveVideoBuffers/</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>ShadowingStage0_5.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>7F009916-13A3-47AE-83B0-1F5EAA3481C0</key>
+		<string>../../../../../addons/ofxDaveOpenCV</string>
+		<key>90547504-73EB-45C0-A059-9ED571CCDF15</key>
+		<string>../..</string>
+		<key>A3B26C51-A549-4871-A993-CF47080ECDEE</key>
+		<string>../../../../../addons/ofxDaveVideoBuffer</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>ssh://wcode.org//data/git/wproj/ShadowingFolder/Shadowing001/</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>90547504-73EB-45C0-A059-9ED571CCDF15</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>7F009916-13A3-47AE-83B0-1F5EAA3481C0</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ofxDaveOpenCV</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>A3B26C51-A549-4871-A993-CF47080ECDEE</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ofxDaveVideoBuffer</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>90547504-73EB-45C0-A059-9ED571CCDF15</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ShadowingStage0_5</string>
+		</dict>
+	</array>
+</dict>
+</plist>
