@@ -59,6 +59,7 @@ class ofApp : public ofBaseApp{
         bool erode;
         bool dilate;
         vector<ofVec2f> blobPath;
+
     
         // GUI
         void setupGUI();
@@ -82,10 +83,22 @@ class ofApp : public ofBaseApp{
         void playAllBuffersSequentiallyTriggered();
         void playOneBufferTriggered();
         void playLiveImageWithBufferTriggered();
-        void playAllBuffersLayered();
+
         void playBuffersWithNoOneThere();
         void playSlowShadow();
         void playSlowMirroredShadow();
+    
+        // Shadowing States
+        void ShadowingDreamStateA();
+        void ShadowingDreamStateB();
+    
+        // Shadowing Modes
+        void ShadowingModeA();
+        void ShadowingModeB();
+        void ShadowingModeC();
+        void ShadowingModeD();
+        void ShadowingModeE();
+        void ShadowingModeF();
     
         std::deque<videoBuffer> buffers;
         vector<ofImage> videoImage;
@@ -101,6 +114,7 @@ class ofApp : public ofBaseApp{
         bool drawLiveImage;
         bool hasBeenPushedFlag;
         int liveShadowProgress;
+
     
         // Debug Stuff
         void drawData();
@@ -114,10 +128,16 @@ class ofApp : public ofBaseApp{
         string requestStr;
         string action_url;
     
-        // Activity and Mode
-        void setupTimer();
+        // Activity,Timers and Modes
+        void setupTimers();
         bool inactive;
         ofxSimpleTimer activityTimer;
         void timerComplete(int &args);
         void timerStarted(int &args);
+    
+        ofxSimpleTimer doCVBackgroundTimer;
+        void CVTimerComplete(int &args);
+        void CVTimerStarted(int &args);
+    
+        string CVstring;
 };

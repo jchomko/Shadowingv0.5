@@ -1,25 +1,26 @@
-//--------------------------------------------------------------
+//--------------------------------------------------
 //* Name: Shadowing.cpp
 //* Project: Playable City 2014 Award
 //* Author: David Haylock
 //* Creation Date: 30-07-2014
 //* Copyright: (c) 2014 by Watershed Arts Trust Ltd.
-//--------------------------------------------------------------
+//--------------------------------------------------
 #include "ofApp.h"
 //--------------------------------------------------------------
 void ofApp::setup()
 {
+    learnBackground = true;
     ofSetFrameRate(FRAMERATE);
     // Setup Variables
     setupVariables();
+    // Setup Custom openCV Class
+    openCV.setup(CAM_WIDTH,CAM_HEIGHT,FRAMERATE);
     // Looks for masks inside of the Masks folder
     setupMasks();
     // Setup the GUI
     setupGUI();
     // Setup the Timer
-    setupTimer();
-    // Setup Custom openCV Class
-    openCV.setup(CAM_WIDTH,CAM_HEIGHT,FRAMERATE);    
+    setupTimers();
 }
 //--------------------------------------------------------------
 void ofApp::update()
@@ -28,7 +29,7 @@ void ofApp::update()
     // Title Window Does not work with RPi
 #else
     // Set Window Title
-    string title = "Shadowing Stage 0.5: " + ofToString(ofGetTimestampString("%H:%M:%S  %d/%m/%Y"));
+    string title = "Shadowing: " + ofToString(ofGetTimestampString("%H:%M:%S  %d/%m/%Y"));
     ofSetWindowTitle(title);
 #endif
     
@@ -71,6 +72,7 @@ void ofApp::update()
     {
         //playbackMode = 5;
         activityTimer.stop();
+        doCVBackgroundTimer.stop();
         startRecording = true;
         hasBeenPushedFlag = false;
     }
@@ -90,6 +92,7 @@ void ofApp::update()
                 //blobPath.clear();
                 hasBeenPushedFlag = true;
                 activityTimer.start(false);
+                doCVBackgroundTimer.start(false);
             }
             else if(videoImage.size() < 30)
             {
@@ -107,12 +110,10 @@ void ofApp::update()
         {
             //Do nothing
         }
-       
     }
     
     if(startRecording == true)
     {
-        
         // If new frame
         if (openCV.newFrame())
         {
@@ -137,7 +138,11 @@ void ofApp::update()
             buffers[i].update();
         }
     }
-    //activityTimer.update();
+    
+    
+    
+    
+    doCVBackgroundTimer.update();
 }
 //--------------------------------------------------------------
 void ofApp::draw()
@@ -149,7 +154,8 @@ void ofApp::draw()
     if (playbackMode == 0)
     {
         // Default
-        playOneBufferTriggered();
+        ShadowingModeA();
+        //playOneBufferTriggered();
     }
     else if (playbackMode == 1)
     {
@@ -159,7 +165,7 @@ void ofApp::draw()
     else if (playbackMode == 2)
     {
         // Dream State 1 - Day Dreaming
-        playAllBuffersLayered();
+        ShadowingDreamStateA();
     }
     else if (playbackMode == 3)
     {
@@ -315,7 +321,6 @@ void ofApp::newResponse(ofxHttpResponse & response)
 {
 	responseStr = ofToString(response.status) + ": " + (string)response.responseBody;
 }
-
 //--------------------------------------------------------------
 void ofApp::setupMasks()
 {
@@ -344,17 +349,32 @@ void ofApp::setupMasks()
 //* Timers
 //--------------------------------------------------------------
 //--------------------------------------------------------------
-void ofApp::setupTimer()
+void ofApp::setupTimers()
 {
     activityTimer.setup(5000);
+    doCVBackgroundTimer.setup(5000);
     ofAddListener(activityTimer.TIMER_STARTED, this, &ofApp::timerStarted);
     ofAddListener(activityTimer.TIMER_COMPLETE, this, &ofApp::timerComplete);
+    ofAddListener(doCVBackgroundTimer.TIMER_STARTED, this, &ofApp::CVTimerStarted);
+    ofAddListener(doCVBackgroundTimer.TIMER_COMPLETE, this, &ofApp::CVTimerComplete);
+}
+//--------------------------------------------------------------
+void ofApp::CVTimerStarted(int &args)
+{
+    cout << "CV Timer Started" << endl;
+    CVstring = "CV Timer Started";
+}
+//--------------------------------------------------------------
+void ofApp::CVTimerComplete(int &args)
+{
+    cout << "CV Timer Done" << endl;
+    openCV.relearnBackground();
+    CVstring = "CV Timer Done";
 }
 //--------------------------------------------------------------
 void ofApp::timerComplete(int &args)
 {
     cout << "Timer Done" << endl;
-    playbackMode = 2;
 }
 //--------------------------------------------------------------
 void ofApp::timerStarted(int &args)
@@ -362,8 +382,9 @@ void ofApp::timerStarted(int &args)
     cout << "Timer Start" << endl;
 }
 //--------------------------------------------------------------
-//* Here are all the Buffer Playback functions
+//* Here are all the Buffer Playback Functions
 //--------------------------------------------------------------
+
 //--------------------------------------------------------------
 //* Default - If Someone walks through the Camera view play the last persons buffer
 //--------------------------------------------------------------
@@ -394,7 +415,6 @@ void ofApp::playOneBufferTriggered()
             
         }
     }
-    
 }
 //--------------------------------------------------------------
 //* Live and kicking - If Someone walks through the Camera view, play the last persons buffer
@@ -433,11 +453,12 @@ void ofApp::playLiveImageWithBufferTriggered()
     }
 }
 //--------------------------------------------------------------
-//* Dream state - play all the buffers in memory simultaneously
+//* Dream state - Play all the buffers in memory simultaneously
+//* Layered
 //--------------------------------------------------------------
-void ofApp::playAllBuffersLayered()
+void ofApp::ShadowingDreamStateA()
 {
-    modeString = "Dream State";
+    modeString = "Dreaming About Everybody";
     if (!buffers.empty())
     {
         for (int i = 0; i < buffers.size(); i++)
@@ -453,7 +474,7 @@ void ofApp::playAllBuffersLayered()
         {
             if (buffers[i].isFinished())
             {
-                buffers[i].start();
+                buffers[i].reset();
             }
         }
     }
@@ -477,6 +498,40 @@ void ofApp::playAllBuffersLayered()
 
             buffers[i].draw();
             ofDisableBlendMode();
+        }
+    }
+}
+//--------------------------------------------------------------
+//* Dream state - Play the buffers Sequentially
+//--------------------------------------------------------------
+void ofApp::ShadowingDreamStateB()
+{
+    modeString = "Dreaming Sequentially";
+    // Check if the buffers are live. Start and Draw the first element in the vector.
+    // When the buffer has finished playing the iterate to the next buffer
+    if (!buffers.empty())
+    {
+        buffers[whichBufferAreWePlaying].start();
+        buffers[whichBufferAreWePlaying].draw();
+        
+        if (buffers.size() > 2)
+        {
+            if (buffers[whichBufferAreWePlaying].isFinished())
+            {
+                // Reset the Awaiting buffer otherwise nothing will happen
+                buffers[whichBufferAreWePlaying+1].reset();
+                // Progress the Buffer Counter
+                whichBufferAreWePlaying++;
+                buffers[whichBufferAreWePlaying].start();
+            }
+        }
+        if (whichBufferAreWePlaying >= buffers.size())
+        {
+            // Reset the first Buffer
+            buffers[0].reset();
+            // Go back to the start and Await my instructions
+            whichBufferAreWePlaying = 0;
+            buffers[whichBufferAreWePlaying].start();
         }
     }
 }
@@ -518,7 +573,7 @@ void ofApp::playAllBuffersSequentiallyTriggered()
 //--------------------------------------------------------------
 void ofApp::playBuffersWithNoOneThere()
 {
-    modeString = "Dreaming Sequentially";
+   /* modeString = "Dreaming Sequentially";
     // Check if the buffers are live. Start and Draw the first element in the vector.
     // When the buffer has finished playing the iterate to the next buffer
     if (!buffers.empty())
@@ -530,17 +585,22 @@ void ofApp::playBuffersWithNoOneThere()
         {
             if (buffers[whichBufferAreWePlaying].isFinished())
             {
+                // Reset the Awaiting buffer otherwise nothing will happen
+                buffers[whichBufferAreWePlaying+1].reset();
+                
                 whichBufferAreWePlaying++;
                 buffers[whichBufferAreWePlaying].start();
             }
         }
         if (whichBufferAreWePlaying >= buffers.size())
         {
+            // Reset the first Buffer
+            buffers[0].reset();
             // Go back to the start and Await my instructions
             whichBufferAreWePlaying = 0;
             buffers[whichBufferAreWePlaying].start();
         }
-    }
+    }*/
 }
 //--------------------------------------------------------------
 //* Live Delayed Shadow - Participants Shadow a second behind live action
@@ -629,6 +689,99 @@ void ofApp::playSlowMirroredShadow()
         openCV.drawLiveShadow();
         ofDisableBlendMode();
     }
+}
+//--------------------------------------------------------------
+//* Basic - Walking under light triggers the most recent recording
+//* Then playback the new recorded buffer
+//* Dave Try to rewind the buffer then playback!!!
+//* Then playback the previous buffers sequentially
+//* If no users, Do the Dream State
+//--------------------------------------------------------------
+//--------------------------------------------------------------
+void ofApp::ShadowingModeA()
+{
+    // Do Dream State A
+    /*if (!openCV.isSomeoneThere())
+    {
+        ShadowingDreamStateA();
+    }*/
+    // If someone is there play the last shadow
+    if(openCV.isSomeoneThere())
+    {
+        modeString = "Shadowing Mode A";
+        if (!buffers.empty())
+        {
+            buffers[0].start();
+            buffers[0].draw();
+        }
+    }
+    else if(!openCV.isSomeoneThere())
+    {
+        if (!buffers.empty())
+        {
+            //cout << "Started Playing Buffer 0" << endl;
+            buffers[0].start();
+            
+            if(!buffers[0].isFinished())
+            {
+                buffers[0].draw();
+            }
+            else
+            {
+                buffers[0].stop();
+                cout << "Played Buffer Once" << endl;
+            }
+        }
+    }
+    else if(!openCV.isSomeoneThere())
+    {
+        
+    }
+}
+//--------------------------------------------------------------
+//* Here are all the Buffer Playback Functions
+//--------------------------------------------------------------
+//--------------------------------------------------------------
+void ofApp::ShadowingModeB()
+{
+    
+    
+}
+//--------------------------------------------------------------
+//* Here are all the Buffer Playback Functions
+//--------------------------------------------------------------
+//--------------------------------------------------------------
+void ofApp::ShadowingModeC()
+{
+    
+    
+}
+//--------------------------------------------------------------
+//* Here are all the Buffer Playback Functions
+//--------------------------------------------------------------
+//--------------------------------------------------------------
+void ofApp::ShadowingModeD()
+{
+    
+    
+}
+//--------------------------------------------------------------
+//* Here are all the Buffer Playback Functions
+//--------------------------------------------------------------
+//--------------------------------------------------------------
+void ofApp::ShadowingModeE()
+{
+    
+    
+}
+//--------------------------------------------------------------
+//* Here are all the Buffer Playback Functions
+//--------------------------------------------------------------
+//--------------------------------------------------------------
+void ofApp::ShadowingModeF()
+{
+    
+    
 }
 //--------------------------------------------------------------
 //* GUI and Return Values
@@ -859,10 +1012,13 @@ void ofApp::drawData()
     debugData << endl;
     debugData << "OPENCV" << endl;
     debugData << "Currently Tracking " << openCV.getNumberOfBlobs() << " Number of Blobs " << endl;
+    debugData << "Timer: " << CVstring << endl;
     debugData << endl;
     debugData << "FBO Current Brightness " << backColor.getBrightness() << endl;
+    
     debugData << endl;
     debugData << "Current Mode: " << modeString << endl;
+    
 
     debugData << endl;
     debugData << endl;
